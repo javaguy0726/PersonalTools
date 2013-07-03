@@ -22,7 +22,7 @@ public class ShowCreateClassInfo {
 	}
 
 	public String showClassDeclaration() {
-		Class<?> cls = getClass(this.className);
+		Class<?> cls = gotClass(this.className);
 
 		String class_declaration = "";
 		String modifiers = Modifier.toString(cls.getModifiers());
@@ -57,7 +57,7 @@ public class ShowCreateClassInfo {
 	}
 	
 	public String showClassConstructors(){
-		Class<?> cls = getClass(this.className);
+		Class<?> cls = gotClass(this.className);
 		String class_constructors="";
 		Constructor<?>[] constructors = cls.getDeclaredConstructors();
 		String modifiers="";
@@ -96,7 +96,7 @@ public class ShowCreateClassInfo {
 	}
 	
 	public String showClassMethods(){
-		Class<?> cls = getClass(this.className);
+		Class<?> cls = gotClass(this.className);
 		Method[] methods = cls.getDeclaredMethods();
 		String class_methods = "";
 		String modifiers = "";
@@ -138,7 +138,7 @@ public class ShowCreateClassInfo {
 	}
 
 	public String showClassFields(){
-		Class<?> cls = getClass(this.className);
+		Class<?> cls = gotClass(this.className);
 		Field[] fields = cls.getDeclaredFields();
 		String class_fields = "";
 		String modifiers = "";
@@ -176,14 +176,14 @@ public class ShowCreateClassInfo {
 			brackets += "[]";
 			cls = cls.getComponentType();
 		}
-		String full_name = cls.getName();
+		String full_name = cls.getName();  //this get the package name+ class name
 		int pos = full_name.lastIndexOf('.');
 		if (pos != -1)
 			full_name = full_name.substring(pos + 1);
 		return full_name + brackets;
 	}
 
-	private Class<?> getClass(String className) {
+	private Class<?> gotClass(String className) {
 		Class<?> cls = null;
 		try {
 			cls = Class.forName(className);
