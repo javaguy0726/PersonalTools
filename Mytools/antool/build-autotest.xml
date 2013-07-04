@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="autotest" default="execute-selenium-test">
+	<property name="src.dir" value="${basedir}/src" />
+	<property name="selenium.classes.dir" value="${basedir}/bin" />
+	<property name="selenium.report.dir" value="${basedir}/report" />
+	<property name="selenium.logs.dir" value="${basedir}/logs" />
+	<property name="selenium.lib.dir" value="${basedir}/lib"/>
+	<property name="target.dir" value="../." />
+	<property name="baselib.dir" value="${basedir}/lib" />
+
+	<path id="base.libs.jars">
+		<fileset dir="${selenium.lib.dir}">
+			<include name="**/*.jar"/>
+		</fileset>
+	</path>
+
+	<path id="selenium-test.classpath">
+		<pathelement path="${selenium.classes.dir}" />
+		<path refid="base.libs.jars" />
+	</path>
+
+	<target name="selenium-test-clean" description="clean selenium tests">
+		<delete dir="${selenium.classes.dir}" includeemptydirs="true" quiet="true" />
+		<mkdir dir="${selenium.classes.dir}" />
+		<delete dir="${selenium.logs.dir}" includeemptydirs="true" quiet="true" />
+		<mkdir dir="${selenium.logs.dir}" />
+		<delete dir="${selenium.report.dir}" includeemptydirs="true" quiet="true" />
+		<mkdir dir="${selenium.report.dir}" />
+	</target>
+
+	<target name="selenium-test-compile" description="local-compilation" depends="selenium-test-clean">
+		<javac includeantruntime="true" srcdir="${src.dir}" destdir="${selenium.classes.dir}" includes="**/selenium/**" excludes="" classpathref="selenium-test.classpath" debug="true" debuglevel="source,lines" encoding="utf-8"/>
+	</target>
+
+	<target name="selenium-test-single">
+		<junit failureProperty="selenium.test.failure" printsummary="on" fork="yes" haltonfailure="off" showoutput="true">
+			<classpath refid="selenium-test.classpath" />
+			<batchtest todir="${selenium.logs.dir}">
+				<fileset dir="${selenium.classes.dir}">
+					<include name="${selenium.include.pattern}" />
+					<exclude name="${selenium.exclude.pattern}" />
+				</fileset>
+			</batchtest>
+			<formatter type="xml" usefile="yes" />
+		</junit>
+		<condition property="result.file.name" value="failed" else="successful">
+			<isset property="selenium.test.failure" />
+		</condition>
+		<touch file="${selenium.report.dir}/${result.file.name}" />
+	</target>
+
+	<target name="selenium-test-single-failed-temp">
+		<junit failureProperty="selenium.test.failure" printsummary="on" fork="yes" haltonfailure="off" showoutput="true">
+			<classpath refid="selenium-test.classpath" />
+			<batchtest todir="${selenium.logs.dir}">
+				<fileset dir="${selenium.classes.dir}">
+					<!--<include name="**/sms/ticket/**/SmsTicketEdit_3_EditRequesterTest.class" />
+					<include name="**/sms/ticket/**/SmsTicketEdit_5_ChangePtOfContactTest.class" /> -->
+					<include name="**/sms/ticket/**/SmsTicketEdit_7_NewPtOfContactTest.class" />
+					<!--<include name="**/sms/ticket/**/SmsTicketEdit_13_ChangeSroTypeTest.class" />
+					<include name="**/sms/ticket/**/SmsTicketEdit_14_ChangeContractLineTest.class" /> -->
+				</fileset>
+			</batchtest>
+			<formatter type="xml" usefile="yes" />
+		</junit>
+		<condition property="result.file.name" value="failed" else="successful">
+			<isset property="selenium.test.failure" />
+		</condition>
+		<touch file="${selenium.report.dir}/${result.file.name}" />
+	</target>
+
+	
+	<property name="ticket.tests.part1" value="**/singlepoint/**/SpSkillManageMaintenanceFilterTest.class" />
+	<property name="ticket.tests.part2" value="**/singlepoint/**/SpToolsUserDefinedForms_0_DefaultLFTest.class" />
+	<property name="ticket.tests.part3" value="**/singlepoint/**/SpToolsUserDefinedForms_1_NewFormLFTest.class" />
+	<property name="ticket.tests.part4" value="**/singlepoint/**/SpToolsUserDefinedForms_2_RestrictionListsLFTest.class" />
+	<!--
+	<property name="ticket.tests.part1" value="**/singlepoint/*s/**/*Test.class" />
+	<property name="ticket.tests.part2" value="**/singlepoint/*i*/**/*Test.class" />
+	<property name="ticket.tests.part3" value="**/singlepoint/hr/**/*Test.class" />
+	<property name="ticket.tests.part4" value="**/singlepoint/*account/**/*Test.class" />
+	
+	<property name="ticket.tests.sros" value="**/singlepoint/sros/**/*Test.class" />
+	<property name="ticket.tests.reports" value="**/singlepoint/reports/**/*Test.class" />
+	<property name="ticket.tests.operations" value="**/singlepoint/operations/siteaudit/**/*Test.class" />
+	<property name="ticket.tests.mobile" value="**/singlepoint/mobileapplication/**/*Test.class" />
+	<property name="ticket.tests.itad" value="**/singlepoint/itad/**/*Test.class" />
+	
+	
+	<property name="ticket.tests.ticketing" value="**/singlepoint/ticket/**/*Test.class" />
+	<property name="ticket.tests.clock" value="**/singlepoint/timeclock/**/*Test.class" />
+	<property name="ticket.tests.tools" value="**/singlepoint/tools/**/*Test.class" />
+	<property name="ticket.tests.youraccount" value="**/singlepoint/youraccount/**/*Test.class" />
+	
+	<property name="all" value="**/singlepoint/**/*Test.class" />
+	-->
+
+	<target name="selenium-parallel-test-run" description="Run Selenium Tests In Parallel">
+		<parallel threadcount="4">
+
+			<!--run all the cases -->
+			<antcall target="selenium-test-single">
+				<param name="selenium.include.pattern" value="${all}" />
+				<param name="selenium.exclude.pattern" value="" />
+			</antcall>
+			
+			<antcall target="selenium-test-single">
+				<param name="selenium.include.pattern" value="${ticket.tests.part1}" />
+				<param name="selenium.exclude.pattern" value="" />
+			</antcall>
+			<antcall target="selenium-test-single">
+				<param name="selenium.include.pattern" value="${ticket.tests.part2}" />
+				<param name="selenium.exclude.pattern" value="" />
+			</antcall>
+			<antcall target="selenium-test-single">
+				<param name="selenium.include.pattern" value="${ticket.tests.part3}" />
+				<param name="selenium.exclude.pattern" value="" />
+			</antcall>
+			<antcall target="selenium-test-single">
+				<param name="selenium.include.pattern" value="${ticket.tests.part4}" />
+				<param name="selenium.exclude.pattern" value="" />
+			</antcall>
+
+
+			<!-- -->
+			<antcall target="selenium-test-single">
+				<param name="selenium.include.pattern" value="${ticket.tests.ticketing}" />
+				<param name="selenium.exclude.pattern" value="" />
+			</antcall>
+
+			<!-- -->
+			<antcall target="selenium-test-single">
+				<param name="selenium.include.pattern" value="${ticket.tests.activityboard}" />
+				<param name="selenium.exclude.pattern" value="" />
+			</antcall>
+
+			<!-- -->
+			<antcall target="selenium-test-single">
+				<param name="selenium.include.pattern" value="${ticket.tests.sros}" />
+				<param name="selenium.exclude.pattern" value="" />
+			</antcall>
+
+			<!-- -->
+			<antcall target="selenium-test-single">
+				<param name="selenium.include.pattern" value="${ticket.tests.operations}" />
+				<param name="selenium.exclude.pattern" value="" />
+			</antcall>
+
+			<!-- -->
+			<antcall target="selenium-test-single">
+				<param name="selenium.include.pattern" value="${ticket.tests.assets}" />
+				<param name="selenium.exclude.pattern" value="" />
+			</antcall>
+
+			<!-- -->
+			<antcall target="selenium-test-single">
+				<param name="selenium.include.pattern" value="${ticket.tests.contracts}" />
+				<param name="selenium.exclude.pattern" value="" />
+			</antcall>
+
+			<!-- -->
+			<antcall target="selenium-test-single">
+				<param name="selenium.include.pattern" value="${ticket.tests.reports}" />
+				<param name="selenium.exclude.pattern" value="" />
+			</antcall>
+
+			<!-- -->
+			<antcall target="selenium-test-single">
+				<param name="selenium.include.pattern" value="${ticket.tests.inventory}" />
+				<param name="selenium.exclude.pattern" value="" />
+			</antcall>
+
+			<!-- -->
+			<antcall target="selenium-test-single">
+				<param name="selenium.include.pattern" value="${ticket.tests.hr}" />
+				<param name="selenium.exclude.pattern" value="" />
+			</antcall>
+
+			<!-- -->
+			<antcall target="selenium-test-single">
+				<param name="selenium.include.pattern" value="${ticket.tests.itad}" />
+				<param name="selenium.exclude.pattern" value="" />
+			</antcall>
+
+			<!-- -->
+			<antcall target="selenium-test-single">
+				<param name="selenium.include.pattern" value="${ticket.tests.tools}" />
+				<param name="selenium.exclude.pattern" value="" />
+			</antcall>
+
+			<!-- -->
+			<antcall target="selenium-test-single">
+				<param name="selenium.include.pattern" value="${ticket.tests.youraccount}" />
+				<param name="selenium.exclude.pattern" value="" />
+			</antcall>
+
+			<!-- -->
+			<antcall target="selenium-test-single">
+				<param name="selenium.include.pattern" value="${ticket.tests.mobile}" />
+				<param name="selenium.exclude.pattern" value="" />
+			</antcall>
+
+			<!-- -->
+			<antcall target="selenium-test-single">
+				<param name="selenium.include.pattern" value="${ticket.tests.clock}" />
+				<param name="selenium.exclude.pattern" value="" />
+			</antcall>
+
+			<!-- 
+			<antcall target="selenium-test-single-failed-temp">
+			</antcall>-->
+
+		</parallel>
+
+		<junitreport todir="${selenium.report.dir}">
+			<fileset dir="${selenium.logs.dir}">
+				<include name="TEST-*.xml" />
+			</fileset>
+			<report todir="${selenium.report.dir}" />
+		</junitreport>
+	</target>
+
+	<!-- send mail -->
+	<target name="email-selenium-report">
+		<zip destfile="${selenium.report.dir}/report.zip">
+			<zipfileset dir="${selenium.report.dir}" includes="**/*" />
+		</zip>
+
+		<!-- mail -->
+		<mail mailhost="smtp.126.com" mailport="25" subject="Books In Print Auto Run Report" user="beyondsofttestacct" password="testaccount">
+			<from name="BeyondSoft Test" address="beyondsofttestacct@126.com" />
+			<to name="Test Result" address="beyondsofttestrst@126.com" />
+			<message>test report detail. 
+			</message>
+		</mail>
+	</target>
+
+	<target name="execute-selenium-test" depends="selenium-test-clean, selenium-test-compile,selenium-parallel-test-run,email-selenium-report" />
+
+</project>

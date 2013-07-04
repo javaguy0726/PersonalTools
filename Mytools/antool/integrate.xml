@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="mytasks" default="" xmlns:ivy="antlib:org.apache.ivy.ant">
+	<description>
+	To generate big jar package.
+	</description>
+
+	<property name="relative.basedir" value="../." />
+	<property name="src.dir" location="${basedir}/libs" />
+        <property name="copy.src.dir" location="${basedir}/SMS-Test/src/test/com/sms/selenium"/>
+	<property name="target.dir" location="${basedir}/target" />
+        <property name="target.jar" location="${basedir}/bigjar" />
+
+         <target name="clean" >
+		<delete dir="${target.dir}" includeemptydirs="true" />
+                <delete dir="${target.jar}" includeemptydirs="true" />
+	 </target>
+         <target name="init" depends="clean">
+		<mkdir dir="${target.dir}" />
+		<mkdir dir="${target.jar}" />
+	</target>
+        <target name="unzip" depends="init">
+		<unzip dest="${target.dir}">
+ 		 <fileset dir="${src.dir}">
+        	    <include name="**/*.jar"/>
+                    
+                 </fileset>
+		</unzip>
+	</target>      
+
+        <target name="jar">
+		<jar basedir="${target.dir}" destfile="${target.jar}/Selenium_Webtest_Kits.jar">
+ 		 <fileset dir="${src.dir}">
+        	    <include name="**/*.class,**/*.css,**/*.txt,**/*.js"/>
+                     
+                 </fileset>
+		</jar>
+	</target> 
+
+        <target name="copy" depends="init" >
+	 <copy todir="${target.dir}" verbose="on">
+             <fileset dir="${copy.src.dir}" includes="**/Sms*.java"/>
+		  <globmapper from="**/*.java" to="**/Sp*.java"/>
+		  <!--<regexpmapper from="Sms(.*)\.java" to="Sp\2\.java"/>-->
+
+  	 </copy>
+	</target> 
+</project>
