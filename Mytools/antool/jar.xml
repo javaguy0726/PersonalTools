@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="jar" default="jar">
+    <property name="src.dir" value="${basedir}/target/classes" />
+	<property name="target.dir" value="${basedir}/tar" />
+	
+	<target name="clean">
+	<delete dir="${target.dir}" includeemptydirs="true"/>
+	
+	</target>
+
+	<target name ="init" depends="clean">
+	 <mkdir dir="${target.dir}"/>
+	</target>
+	
+	<target name="jar" depends="init">
+	  <jar basedir="${src.dir}" destfile="${target.dir}/SMS-Common.jar">
+	   <fileset dir="${src.dir}">
+	     <include name="**/*.class"/>
+	   </fileset>
+	  </jar>
+	</target>
+	
+</project>
